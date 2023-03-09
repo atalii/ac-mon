@@ -89,13 +89,14 @@ async fn monitor(db: Database) -> Result<()> {
     for (_, entry) in &*db {
         let entry = entry.clone();
 
-        let url = entry.url();
-        let room_params = RoomParams::from_canvas_slug(&url).await?;
-
         info!("monitoring: {}", entry.name());
+
+        let url = entry.url();
+        let mut room_params = RoomParams::from_canvas_slug(&url).await.unwrap();
 
         tasks.push(tokio::spawn(async move {
             loop {
+
                 let mut web_socket = match AcSocket::new(room_params.clone(), entry.clone()).await {
                     Ok(sock) => sock,
                     Err(e) => {
@@ -111,6 +112,8 @@ async fn monitor(db: Database) -> Result<()> {
                 } else {
                     info!("failed, restarting: {}", entry.name());
                 }
+
+                room_params = RoomParams::from_canvas_slug(&url).await.unwrap();
             }
         }));
     }
