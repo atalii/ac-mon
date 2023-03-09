@@ -1,0 +1,29 @@
+[package]
+name = "ac-mon"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+anyhow = "1"
+thiserror = "1"
+
+chrono = "0.4.23"
+
+log = "0.4.17"
+env_logger = "0.10.0"
+
+tokio = { version = "1", features = ["full"] }
+futures-util = "0.3.26"
+
+regex = "1"
+reqwest = "0.11"
+tokio-tungstenite = { version = "0.18.0", features = ["native-tls"] }
+
+json = "0.12.4"
+
+knuffel = "2.0.0"
+
+warp = "0.3.3"
