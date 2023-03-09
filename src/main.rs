@@ -104,9 +104,12 @@ async fn monitor(db: Database) -> Result<()> {
                     }
                 };
 
-                web_socket.listen().await;
-                time::sleep(Duration::from_secs(15 * 60)).await;
-                info!("sleeping: {}", entry.name());
+                if web_socket.listen().await {
+                    time::sleep(Duration::from_secs(15 * 60)).await;
+                    info!("sleeping: {}", entry.name());
+                } else {
+                    info!("failed, restarting: {}", entry.name());
+                }
             }
         }));
     }

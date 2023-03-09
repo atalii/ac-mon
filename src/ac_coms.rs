@@ -111,18 +111,27 @@ impl AcSocket {
         Ok(Self { inner, entry })
     }
 
-    pub async fn listen(&mut self) {
+    /// Listen on a websocket. Return true if the room opens, and false if the socket gives out
+    /// before that.
+    pub async fn listen(&mut self) -> bool {
         let mut status = Status::Pending;
 
         while status != Status::Open {
-            let next = self
+            let response = self
                 .inner
                 .next()
-                .await
-                .unwrap()
-                .unwrap()
-                .into_text()
-                .unwrap();
+                .await;
+
+            let next = match response {
+                Some(k) => k,
+                None => return false,
+            };
+
+            let next = match next {
+                Ok(k) => k.into_text().unwrap(),
+                Err(_) => return false,
+            };
+
 
             match Rpc::new(&next) {
                 Err(e) => warn!("Unable to handle RPC, ignoring: {}", e),
@@ -138,6 +147,8 @@ impl AcSocket {
                 }
             };
         }
+
+        return true;
     }
 }
 
