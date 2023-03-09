@@ -280,6 +280,7 @@ impl Rpc {
     }
 
     pub fn update(&self, status: Status) -> Status {
+        info!("Updating: {}", self.0);
         match status {
             Status::Closed | Status::Pending => match &self.0[..] {
                 "accepted" => Status::Open,
