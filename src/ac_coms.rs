@@ -104,11 +104,11 @@ impl AcSocket {
             return Err((InitError::UnsuccessfulWs).into());
         }
 
-        inner.send(
-            tokio_tungstenite::tungstenite::Message::Text(
-                r#"{"type":"WSFunc","method":"startHeartbeat","value":true}"#.to_string()
-            )
-        ).await?;
+        inner
+            .send(tokio_tungstenite::tungstenite::Message::Text(
+                r#"{"type":"WSFunc","method":"startHeartbeat","value":true}"#.to_string(),
+            ))
+            .await?;
 
         Ok(Self { inner, entry })
     }
@@ -135,14 +135,15 @@ impl AcSocket {
             match Rpc::new(&next) {
                 Err(e) => warn!("Unable to handle RPC, ignoring: {}", e),
 
-                Ok(rpc) if rpc.is_heartbeat() =>
-                    debug!("received heartbeat from: {}", self.entry.name()),
+                Ok(rpc) if rpc.is_heartbeat() => {
+                    debug!("received heartbeat from: {}", self.entry.name())
+                }
 
                 Ok(rpc) => {
                     status = rpc.update(status);
                     self.entry.set_status(status);
                     info!("room changed: {}/{:?}", self.entry.name(), status);
-                },
+                }
             };
         }
     }
@@ -271,12 +272,11 @@ impl Rpc {
 
     pub fn update(&self, status: Status) -> Status {
         match status {
-            Status::Closed | Status::Pending =>
-                match &self.0[..] {
-                    "accepted" => Status::Open,
-                    "blocked" => Status::Blocked,
-                    _ => Status::Closed,
-                    },
+            Status::Closed | Status::Pending => match &self.0[..] {
+                "accepted" => Status::Open,
+                "blocked" => Status::Blocked,
+                _ => Status::Closed,
+            },
 
             Status::Open => Status::Open,
             Status::Blocked => Status::Blocked,
