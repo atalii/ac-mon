@@ -17,8 +17,6 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use thiserror::Error;
 
-use tokio::time;
-use tokio::time::Duration;
 use tokio::net::TcpStream;
 
 use tokio_tungstenite;
@@ -114,15 +112,9 @@ impl AcSocket {
     }
 
     pub async fn listen(&mut self) {
-        let mut status = self.entry.status();
+        let mut status = Status::Pending;
 
-        loop {
-            if status == Status::Open {
-                info!("sleeping on: {}", self.entry.name());
-                time::sleep(Duration::from_secs(15 * 60)).await;
-                self.entry.set_status(Status::Pending);
-            }
-
+        while status != Status::Open {
             let next = self
                 .inner
                 .next()

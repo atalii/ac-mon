@@ -5,12 +5,15 @@ use std::sync::Arc;
 use anyhow::Result;
 use env_logger;
 use knuffel;
-use log::info;
+use log::{error, info};
 
 use json::JsonValue;
 
 use warp;
 use warp::Filter;
+
+use tokio::time;
+use tokio::time::Duration;
 
 use ac_mon::ac_coms::AcSocket;
 use ac_mon::{Class, DbEntry, RoomParams};
@@ -58,9 +61,7 @@ fn all(db: Database) -> String {
     "rooms": {}
 }}
 "#,
-        JsonValue::Array(
-            db.values().map(|x| JsonValue::Object(x.json())).collect()
-        ).dump(),
+        JsonValue::Array(db.values().map(|x| JsonValue::Object(x.json())).collect()).dump(),
     )
 }
 
@@ -90,11 +91,24 @@ async fn monitor(db: Database) -> Result<()> {
 
         let url = entry.url();
         let room_params = RoomParams::from_canvas_slug(&url).await?;
-        let mut web_socket = AcSocket::new(room_params, entry.clone()).await?;
 
         info!("monitoring: {}", entry.name());
 
-        tasks.push(tokio::spawn(async move { web_socket.listen().await }));
+        tasks.push(tokio::spawn(async move {
+            loop {
+                let mut web_socket = match AcSocket::new(room_params.clone(), entry.clone()).await {
+                    Ok(sock) => sock,
+                    Err(e) => {
+                        error!("failed to create socket for {}: {}", entry.name(), e);
+                        break;
+                    }
+                };
+
+                web_socket.listen().await;
+                time::sleep(Duration::from_secs(15 * 60)).await;
+                info!("sleeping: {}", entry.name());
+            }
+        }));
     }
 
     for task in tasks {

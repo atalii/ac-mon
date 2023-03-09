@@ -34,6 +34,7 @@ struct SmallDate {
 
 /// We can scrape all of these from where the canvas link redirects, and then fill them into the
 /// the web socket. What are each of these? No idea! But we need them, so here we are.
+#[derive(Clone)]
 pub struct RoomParams {
     ticket: String,
     origin: String,
