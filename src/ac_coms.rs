@@ -116,7 +116,7 @@ impl AcSocket {
     pub async fn listen(&mut self) -> bool {
         let mut status = Status::Pending;
 
-        while status != Status::Open {
+        while status == Status::Closed || status == Status::Pending {
             let response = self
                 .inner
                 .next()
