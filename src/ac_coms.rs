@@ -150,6 +150,12 @@ impl AcSocket {
 
         return true;
     }
+
+    pub async fn close(&mut self) {
+        if let Err(e) = self.inner.close(None).await {
+            warn!("Couldn't close socket: {e}");
+        }
+    }
 }
 
 impl RoomParams {
