@@ -59,6 +59,9 @@ pub enum CommError {
 
     #[error("Missing a parameter from RPC.")]
     MissingParams,
+
+    #[error("Received an empty message.")]
+    Empty,
 }
 
 /// Encapsulate an AC socket connection.
@@ -134,7 +137,11 @@ impl AcSocket {
 
 
             match Rpc::new(&next) {
-                Err(e) => warn!("Unable to handle RPC, ignoring: {}", e),
+                Err(e) => warn!(
+                    "Unable to handle RPC from: {}; ignoring: {}",
+                    self.entry.name(),
+                    e,
+                ),
 
                 Ok(rpc) if rpc.is_heartbeat() => {
                     debug!("received heartbeat from: {}", self.entry.name())
@@ -231,6 +238,12 @@ impl Rpc {
     /// Extract and validate anything useful from some JSON. (Might be good to parse-not-validate    
     /// later, but this isn't too bad for now.)    
     pub fn new(json: &str) -> Result<Self> {
+        debug!("RCV'd: {}", json);
+
+        if json.is_empty() {
+            Err(CommError::Empty)?;
+        }
+
         let json = json::parse(json).map_err(|_| CommError::InvalidJson)?;
         let rpc = match json {
             json::JsonValue::Object(o) => Ok(o),
