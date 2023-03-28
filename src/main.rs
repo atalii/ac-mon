@@ -96,7 +96,6 @@ async fn monitor(db: Database) -> Result<()> {
 
         tasks.push(tokio::spawn(async move {
             loop {
-
                 let mut web_socket = match AcSocket::new(room_params.clone(), entry.clone()).await {
                     Ok(sock) => sock,
                     Err(e) => {

@@ -120,10 +120,7 @@ impl AcSocket {
         let mut status = Status::Pending;
 
         while status == Status::Closed || status == Status::Pending {
-            let response = self
-                .inner
-                .next()
-                .await;
+            let response = self.inner.next().await;
 
             let next = match response {
                 Some(k) => k,
@@ -134,7 +131,6 @@ impl AcSocket {
                 Ok(k) => k.into_text().unwrap(),
                 Err(_) => return false,
             };
-
 
             match Rpc::new(&next) {
                 Err(e) => warn!(
