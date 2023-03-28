@@ -5,7 +5,7 @@ use std::sync::Arc;
 use anyhow::Result;
 use env_logger;
 use knuffel;
-use log::{error, info};
+use log::{error, info, warn};
 
 use json::JsonValue;
 
@@ -113,7 +113,19 @@ async fn monitor(db: Database) -> Result<()> {
                     info!("failed, restarting: {}", entry.name());
                 }
 
-                room_params = RoomParams::from_canvas_slug(&url).await.unwrap();
+                loop {
+                    match RoomParams::from_canvas_slug(&url).await {
+                        Ok(rp) => {
+                            room_params = rp;
+                            break;
+                        }
+
+                        Err(e) => {
+                            warn!("Couldn't get room params: {}", e);
+                            time::sleep(Duration::from_secs(10)).await;
+                        }
+                    };
+                }
             }
         }));
     }
