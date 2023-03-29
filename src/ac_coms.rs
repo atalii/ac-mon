@@ -143,6 +143,11 @@ impl AcSocket {
                     debug!("received heartbeat from: {}", self.entry.name())
                 }
 
+                Ok(rpc) if rpc.is_timeout() => {
+                    info!("timed out: {}", self.entry.name());
+                    return false;
+                }
+
                 Ok(rpc) => {
                     status = rpc.update(status);
                     self.entry.set_status(status);
@@ -286,6 +291,10 @@ impl Rpc {
 
     pub fn is_heartbeat(&self) -> bool {
         self.0 == "heartbeat"
+    }
+
+    pub fn is_timeout(&self) -> bool {
+        self.0 == "connectionTimedOut"
     }
 
     pub fn update(&self, status: Status) -> Status {
