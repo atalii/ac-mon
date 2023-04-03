@@ -4,6 +4,8 @@
 > purposes; i.e., in case you want to try something similar for your
 > institution.
 
+![A screenshot of the dashboard, displaying multiple rooms. One is marked 'open'.](./sc.png)
+
 ## Overview/Context
 
 Adobe Connect (AC) is a platform for online meetings, and it's what my school
