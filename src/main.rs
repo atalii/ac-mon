@@ -33,15 +33,20 @@ async fn main() -> Result<()> {
 async fn serve(db: Database) {
     info!("Web server task started.");
 
+    let cors = warp::cors()
+        .allow_any_origin()
+        .allow_methods(vec!["GET", "POST"])
+        .allow_headers(vec!["Authorization"]);
+
     let all = warp::path!("api" / "v1" / "all").map({
         let db = db.clone();
         move || all(db.clone())
-    });
+    }).with(cors.clone());
 
     let read = warp::path!("api" / "v1" / "room" / String).map({
         let db = db.clone();
         move |name| read(db.clone(), name)
-    });
+    }).with(cors.clone());
 
     let routes = all.or(read);
     warp::serve(routes).run(([0, 0, 0, 0], 8080)).await;
