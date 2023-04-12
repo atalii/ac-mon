@@ -48,7 +48,11 @@ async fn serve(db: Database) {
         move |name| read(db.clone(), name)
     }).with(cors.clone());
 
-    let routes = all.or(read);
+    let monitor = warp::path!("api" / "v1" / "status")
+        .map(|| "".to_string())
+        .with(cors.clone());
+
+    let routes = all.or(read).or(monitor);
     warp::serve(routes).run(([0, 0, 0, 0], 8080)).await;
 }
 
