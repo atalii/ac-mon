@@ -71,10 +71,7 @@ fn read(db: Database, name: String) -> String {
 
 fn all(db: Database) -> String {
     format!(
-        r#"{{
-    "rooms": {}
-}}
-"#,
+        r#"{{"rooms":{}}}"#,
         JsonValue::Array(db.values().map(|x| JsonValue::Object(x.json())).collect()).dump(),
     )
 }
