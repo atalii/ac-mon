@@ -25,7 +25,12 @@ async fn main() -> Result<()> {
     env_logger::init();
     let db = read_db()?;
 
-    tokio::join!(serve(db.clone()), monitor(db),);
+    tokio::join!(
+        serve(db.clone()),
+        async {
+            monitor(db).await.expect("AC monitoring failed.");
+        },
+    );
 
     Ok(())
 }
